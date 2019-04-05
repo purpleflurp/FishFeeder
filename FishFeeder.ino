@@ -18,7 +18,7 @@ const int FEEDDELAY = 10000; // delay between feeding
 int FEEDSTATE = 0;         // variable for reading the FEED button state
 int RESETSTATE = 0;        // variable for reading the RESET button state
 int FEEDCYCLE;
-int TIMER;
+unsigned long TIMER;
 unsigned long PREVFEED;
 
 void setup() {
