@@ -9,16 +9,17 @@ const int LEDG =  8;      // green led pin
 const int LEDR = 9;       // red led pin
 const int POTPIN = 0;     // potentiometer input pin
 const int SERVOPIN = 5;   // servo output pin
-const int FEEDPOS = 180;
-const int STARTPOS = 0;
+const int FEEDPOS = 0;
+const int STARTPOS = 180;
+const int FEEDDELAY = 10000; // delay between feeding
 
 
 // variables will change:
 int FEEDSTATE = 0;         // variable for reading the FEED button state
 int RESETSTATE = 0;        // variable for reading the RESET button state
-int FEEDTIME = 0;
-int LASTFEED;
 int FEEDCYCLE;
+int TIMER;
+unsigned long PREVFEED;
 
 void setup() {
   // initialize the LED pins as an output:
@@ -39,15 +40,19 @@ void loop() {
     FEEDCYCLE = map(FEEDCYCLE, 0, 1023, 1, 10);       // map value of potentiometer to between 1 and 10
     FEEDSTATE = digitalRead(FEED);
     RESETSTATE = digitalRead(RESET);
+    TIMER = millis();
+    Serial.println(PREVFEED); 
+    Serial.println(TIMER);
     Serial.println(FEEDCYCLE);
   // Feed Button
-      if (FEEDSTATE == HIGH) {
+      if (FEEDSTATE == HIGH || TIMER - PREVFEED > FEEDDELAY) {
         delay(100);
+        PREVFEED = TIMER;
         for (int i = FEEDCYCLE; i > 0; i=i-1){
         servo.write(FEEDPOS);
-        delay(1000);
+        delay(2000);
         servo.write(STARTPOS);
-        delay(1000);
+        delay(2000);
       }
       }
       else{}
@@ -68,7 +73,7 @@ void loop() {
               digitalWrite(LEDR, LOW);
               digitalWrite(LEDG, LOW);
             delay(100);
-            LASTFEED = 0;
+            PREVFEED = TIMER;
             servo.write(STARTPOS);
   } else {
  
