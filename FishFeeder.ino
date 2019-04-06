@@ -1,17 +1,19 @@
 #include <Servo.h>
+#include <LiquidCrystal.h>
 
+LiquidCrystal lcd(13,12,11,10,9,8); // Initializing the LCD pins.
 Servo servo; // create servo object
 
 //Constants
 const int FEED = 2;       // FEED pin
 const int RESET = 3;      // RESET pin
-const int LEDG =  8;      // green led pin
-const int LEDR = 9;       // red led pin
+const int LEDG =  6;      // green led pin
+const int LEDR = 7;       // red led pin
 const int POTPIN = 0;     // potentiometer input pin
 const int SERVOPIN = 5;   // servo output pin
 const int FEEDPOS = 0;
 const int STARTPOS = 180;
-const int FEEDDELAY = 10000; // delay between feeding
+long FEEDDELAY = 86400000; // delay between feeding
 
 
 // variables will change:
@@ -23,6 +25,7 @@ unsigned long PREVFEED;
 
 void setup() {
   // initialize the LED pins as an output:
+  lcd.begin(16,2); // Initializes the interface to the LCD screen, and specifies the dimensions (width and height) of the display
   pinMode(LEDG, OUTPUT);
   pinMode(LEDR, OUTPUT);
   // initialize the pushbutton pin as an input:
@@ -34,16 +37,30 @@ void setup() {
 }
 
 void loop() {
-  // read the state of the pushbutton value:
+  // keep green light on, write potentiometer to 1-10 scale, set timers and button states.
   digitalWrite(LEDG, HIGH);
     FEEDCYCLE = analogRead(POTPIN);                   // reads the value of the potentiometer (value between 0 and 1023)
     FEEDCYCLE = map(FEEDCYCLE, 0, 1023, 1, 10);       // map value of potentiometer to between 1 and 10
     FEEDSTATE = digitalRead(FEED);
     RESETSTATE = digitalRead(RESET);
     TIMER = millis();
-    Serial.println(PREVFEED); 
-    Serial.println(TIMER);
-    Serial.println(FEEDCYCLE);
+    int hours = ((FEEDDELAY/86400000)-((TIMER-PREVFEED)/3600000))*24;
+
+  // Create and Load LCD Interface
+
+  lcd.setCursor(0,0); //Setting the cursor at the start of the LCD
+  lcd.print("  Next:  ");
+  lcd.print(hours);
+  lcd.print("hrs.");
+  lcd.setCursor(0,1);
+  lcd.print(" Servings:   ");
+  lcd.print(FEEDCYCLE);
+  lcd.print(" ");
+  delay(150);
+      Serial.println(TIMER);
+      Serial.println(hours);
+  
+
   // Feed Button
       if (FEEDSTATE == HIGH || TIMER - PREVFEED > FEEDDELAY) {
         delay(100);
