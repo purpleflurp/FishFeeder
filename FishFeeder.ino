@@ -1,19 +1,20 @@
 #include <Servo.h>
 #include <LiquidCrystal.h>
 
-LiquidCrystal lcd(13,12,11,10,9,8); // Initializing the LCD pins.
+LiquidCrystal lcd(7,8,9,10,11,12); // Initializing the LCD pins.
 Servo servo; // create servo object
 
 //Constants
 const int FEED = 2;       // FEED pin
 const int RESET = 3;      // RESET pin
-const int LEDG =  6;      // green led pin
-const int LEDR = 7;       // red led pin
+const int LEDG =  4;      // green led pin
+const int LEDR = 5;       // red led pin
 const int POTPIN = 0;     // potentiometer input pin
-const int SERVOPIN = 5;   // servo output pin
+const int SERVOPIN = 6;   // servo output pin
 const int FEEDPOS = 0;
 const int STARTPOS = 180;
-long FEEDDELAY = 86400000; // delay between feeding
+unsigned long FEEDDELAY = 86400000L; // delay between feeding
+int count;
 
 
 // variables will change:
@@ -47,8 +48,7 @@ void loop() {
       FEEDCYCLE = 10;
     }
     TIMER = millis();
-    float hours = ((FEEDDELAY/86400000)-((TIMER-PREVFEED)/3600000))*24;
-
+    float hours = ((FEEDDELAY/43200000)-((TIMER-PREVFEED)/43200000))*12;
   // Create and Load LCD Interface
 
   lcd.setCursor(0,0); //Setting the cursor at the start of the LCD
@@ -60,12 +60,14 @@ void loop() {
   lcd.print(FEEDCYCLE);
   lcd.print(" ");
   delay(150);
-      Serial.println(TIMER);
       Serial.println(hours);
+      Serial.println(FEEDCYCLE);
+      Serial.println(TIMER);
+      Serial.println(RESETSTATE);
   
 
   // Feed Button
-      if (FEEDSTATE == HIGH || TIMER - PREVFEED > FEEDDELAY) {
+      if (FEEDSTATE == HIGH & RESETSTATE == LOW || TIMER - PREVFEED > FEEDDELAY) {
         delay(100);
         PREVFEED = TIMER;
         for (int i = FEEDCYCLE; i > 0; i=i-1){
@@ -95,20 +97,10 @@ void loop() {
             delay(100);
             PREVFEED = TIMER;
             servo.write(STARTPOS);
-  } else {
- 
+            FEEDDELAY = 86400000;
   }
-  int count = 0;
   // Double buttons for different feeding time
     if(RESETSTATE == HIGH & FEEDSTATE == HIGH){
-      delay(150);
-    count = count + 1;
-      if (count > 1){
-      count = 0;
-      FEEDDELAY = 86400000; 
+        FEEDDELAY = 86400000/2;
       }
-      if (count == 1){
-        FEEDDELAY = FEEDDELAY/2;
-      }
-  }
 }
